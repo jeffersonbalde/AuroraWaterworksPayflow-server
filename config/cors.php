@@ -10,6 +10,7 @@ return [
         'http://localhost:5174',
         'http://localhost:3001',
         'https://brimsclient-ihpwt.ondigitalocean.app',
+        'https://aurorawaterworkspayflow-client-suowc.ondigitalocean.app',
     ],
 
     'allowed_origins_patterns' => [],
