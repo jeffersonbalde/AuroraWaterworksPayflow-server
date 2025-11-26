@@ -18,14 +18,23 @@ return new class extends Migration
             $table->string('contact_number')->nullable();
             $table->text('address')->nullable();
             
-            // Staff-specific columns - REMOVE ->after() calls
+            // Customer-specific columns
+            $table->enum('service', ['residential', 'commercial', 'institutional'])->nullable();
+            $table->date('connection_date')->nullable();
+            
+            // Staff-specific columns
             $table->string('position')->nullable();
             $table->string('created_by')->nullable();
             $table->text('staff_notes')->nullable();
             
+            // Deactivation fields
+            $table->text('deactivate_reason')->nullable();
+            $table->timestamp('deactivated_at')->nullable();
+            $table->string('deactivated_by')->nullable();
+            
             $table->string('avatar')->nullable();
             $table->enum('role', ['admin', 'staff', 'client'])->default('client');
-            $table->enum('status', ['active', 'inactive', 'pending', 'rejected'])->default('pending');
+            $table->enum('status', ['active', 'inactive', 'pending', 'rejected', 'delinquent'])->default('pending');
             $table->string('approved_by')->nullable();
             $table->timestamp('approved_at')->nullable();
             $table->string('rejected_by')->nullable();
@@ -38,6 +47,8 @@ return new class extends Migration
             
             // Add index for better performance
             $table->index(['role', 'status']);
+            $table->index(['status']); // For filtering by status
+            $table->index(['service']); // For filtering by service type
         });
 
         // Password reset tokens table

@@ -1,263 +1,844 @@
 <?php
+// database/seeders/UserSeeder.php
 
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    public function run()
     {
-        // Admin user with avatar
+        // Create admin user
         User::create([
-            'name' => 'System Admin',
-            'email' => 'admin@aurorawater.com',
-            'password' => Hash::make('admin123'),
-            'contact_number' => '09123456789',
-            'address' => 'Aurora Waterworks Main Office',
-            'avatar' => 'https://ui-avatars.com/api/?name=System+Admin&background=336B34&color=fff&size=128',
+            'name' => 'System Administrator',
+            'email' => 'admin@admin.com',
+            'password' => Hash::make('123456'),
             'role' => 'admin',
             'status' => 'active',
-            'approved_by' => 'System',
             'approved_at' => now(),
+            'approved_by' => 'system',
         ]);
 
-        // Staff user with avatar - UPDATED WITH STAFF FIELDS
+        // Create staff user
         User::create([
             'name' => 'Staff Member',
             'email' => 'staff@aurorawater.com',
-            'password' => Hash::make('staff123'),
-            'contact_number' => '09123456788',
-            'address' => 'Aurora Waterworks Office',
-            // Staff-specific fields
-            'position' => 'General Staff',
-            'created_by' => 'System Admin',
-            'staff_notes' => 'Initial staff account for system testing',
-            // End staff-specific fields
-            'avatar' => 'https://ui-avatars.com/api/?name=Staff+Member&background=0D8ABC&color=fff&size=128',
+            'password' => Hash::make('123456'),
             'role' => 'staff',
             'status' => 'active',
-            'approved_by' => 'System Admin',
+            'position' => 'Billing Officer',
             'approved_at' => now(),
+            'approved_by' => 'admin',
         ]);
 
-        // Sample Client (Pending) - no avatar
+        // Create client user
         User::create([
-            'wws_id' => '1375',
-            'name' => 'CABAHUG BONIFACIO',
-            'email' => 'client@example.com',
-            'contact_number' => '09123456789',
-            'address' => 'POBLACION AURORA',
-            'password' => Hash::make('client123'),
-            'avatar' => null, // Clients don't have avatars
-            'role' => 'client',
-            'status' => 'pending',
-        ]);
-
-        // Rejected Client - no avatar
-        User::create([
-            'wws_id' => '1377',
-            'name' => 'Rejected Client',
-            'email' => 'rejected@example.com',
-            'contact_number' => '09123456781',
-            'address' => 'POBLACION AURORA',
-            'password' => Hash::make('client123'),
-            'avatar' => null,
-            'role' => 'client',
-            'status' => 'rejected',
-            'rejected_by' => 'System Admin',
-            'rejected_at' => now(),
-            'rejection_reason' => 'Invalid WWS ID provided',
-        ]);
-
-        // Active Client - no avatar
-        User::create([
-            'wws_id' => '1376',
-            'name' => 'Approved Client',
-            'email' => 'approved@example.com',
-            'contact_number' => '09123456780',
-            'address' => 'POBLACION AURORA',
-            'password' => Hash::make('client123'),
-            'avatar' => null,
+            'name' => 'John Client',
+            'email' => 'client@aurorawater.com',
+            'wws_id' => 'WWS001',
+            'password' => Hash::make('123456'),
             'role' => 'client',
             'status' => 'active',
-            'approved_by' => 'System Admin',
+            'service' => 'residential',
+            'address' => '123 Main St, Aurora',
+            'contact_number' => '09123456789',
             'approved_at' => now(),
+            'approved_by' => 'staff',
         ]);
 
-        // Additional Staff Members with avatars - UPDATED WITH STAFF FIELDS
-        $staffMembers = [
-            [
-                'name' => 'Maria Santos',
-                'email' => 'maria.santos@aurorawater.com',
-                'contact_number' => '09987654321',
-                'address' => 'Aurora Waterworks Billing Dept',
-                'position' => 'Billing Staff',
-                'staff_notes' => 'Handles client billing and payment processing'
-            ],
-            [
-                'name' => 'Juan Dela Cruz',
-                'email' => 'juan.delacruz@aurorawater.com',
-                'contact_number' => '09987654322',
-                'address' => 'Aurora Waterworks Customer Service',
-                'position' => 'Customer Service Staff',
-                'staff_notes' => 'Manages customer inquiries and support'
-            ],
-            [
-                'name' => 'Roberto Garcia',
-                'email' => 'roberto.garcia@aurorawater.com',
-                'contact_number' => '09987654323',
-                'address' => 'Aurora Waterworks Meter Reading',
-                'position' => 'Meter Reader Supervisor',
-                'staff_notes' => 'Oversees meter reading operations and team'
-            ]
-        ];
+        // Create another client for testing
+        User::create([
+            'name' => 'Maria Santos',
+            'email' => 'maria@aurorawater.com',
+            'wws_id' => 'WWS002',
+            'password' => Hash::make('123456'),
+            'role' => 'client',
+            'status' => 'active',
+            'service' => 'commercial',
+            'address' => '456 Business Ave, Aurora',
+            'contact_number' => '09198765432',
+            'approved_at' => now(),
+            'approved_by' => 'staff',
+        ]);
 
-        foreach ($staffMembers as $staff) {
-            User::create([
-                'name' => $staff['name'],
-                'email' => $staff['email'],
-                'password' => Hash::make('staff123'),
-                'contact_number' => $staff['contact_number'],
-                'address' => $staff['address'],
-                // Staff-specific fields
-                'position' => $staff['position'],
-                'created_by' => 'System Admin',
-                'staff_notes' => $staff['staff_notes'],
-                // End staff-specific fields
-                'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($staff['name']) . '&background=0D8ABC&color=fff&size=128',
+        // Create pending client for testing approvals
+        User::create([
+            'name' => 'Pending User',
+            'email' => 'pending@aurorawater.com',
+            'wws_id' => 'WWS003',
+            'password' => Hash::make('123456'),
+            'role' => 'client',
+            'status' => 'pending',
+            'service' => 'residential',
+            'address' => '789 Pending St, Aurora',
+            'contact_number' => '09111222333',
+        ]);
+
+        // Additional Active Staff Users (20+)
+        $activeStaffUsers = [
+            [
+                'name' => 'Sarah Johnson',
+                'email' => 'sarah.johnson@aurorawater.com',
+                'password' => Hash::make('123456'),
                 'role' => 'staff',
                 'status' => 'active',
-                'approved_by' => 'System Admin',
+                'position' => 'Customer Service Representative',
                 'approved_at' => now(),
-            ]);
-        }
-
-        // Create 30+ Pending Clients for Approval Tab Testing - no avatars
-        $pendingClients = [
-            ['wws_id' => '1401', 'name' => 'ABELLA RICARDO', 'email' => 'abella.ricardo@example.com', 'contact_number' => '09120000001', 'address' => 'ZAMORA AURORA'],
-            ['wws_id' => '1402', 'name' => 'BACALSO MARIA', 'email' => 'bacalso.maria@example.com', 'contact_number' => '09120000002', 'address' => 'POBLACION AURORA'],
-            ['wws_id' => '1403', 'name' => 'CABAHUG JUAN', 'email' => 'cabahug.juan@example.com', 'contact_number' => '09120000003', 'address' => 'SAN JOSE AURORA'],
-            ['wws_id' => '1404', 'name' => 'DALISAY CARLOS', 'email' => 'dalisay.carlos@example.com', 'contact_number' => '09120000004', 'address' => 'POBLACION AURORA'],
-            ['wws_id' => '1405', 'name' => 'ESTEVES ANTONIO', 'email' => 'esteves.antonio@example.com', 'contact_number' => '09120000005', 'address' => 'ZAMORA AURORA'],
-            ['wws_id' => '1406', 'name' => 'FLORES BEATRIZ', 'email' => 'flores.beatriz@example.com', 'contact_number' => '09120000006', 'address' => 'POBLACION AURORA'],
-            ['wws_id' => '1407', 'name' => 'GARCIA ROMEO', 'email' => 'garcia.romeo@example.com', 'contact_number' => '09120000007', 'address' => 'SAN JOSE AURORA'],
-            ['wws_id' => '1408', 'name' => 'HERNANDEZ LOURDES', 'email' => 'hernandez.lourdes@example.com', 'contact_number' => '09120000008', 'address' => 'POBLACION AURORA'],
-            ['wws_id' => '1409', 'name' => 'IBANEZ FERNANDO', 'email' => 'ibanez.fernando@example.com', 'contact_number' => '09120000009', 'address' => 'ZAMORA AURORA'],
-            ['wws_id' => '1410', 'name' => 'JAVIER SUSANA', 'email' => 'javier.susana@example.com', 'contact_number' => '09120000010', 'address' => 'POBLACION AURORA'],
-            ['wws_id' => '1411', 'name' => 'KINTANAR ROBERTO', 'email' => 'kintanar.roberto@example.com', 'contact_number' => '09120000011', 'address' => 'SAN JOSE AURORA'],
-            ['wws_id' => '1412', 'name' => 'LIM MIGUEL', 'email' => 'lim.miguel@example.com', 'contact_number' => '09120000012', 'address' => 'POBLACION AURORA'],
-            ['wws_id' => '1413', 'name' => 'MARTINEZ CONSUELO', 'email' => 'martinez.consuelo@example.com', 'contact_number' => '09120000013', 'address' => 'ZAMORA AURORA'],
-            ['wws_id' => '1414', 'name' => 'NAVARRO PEDRO', 'email' => 'navarro.pedro@example.com', 'contact_number' => '09120000014', 'address' => 'POBLACION AURORA'],
-            ['wws_id' => '1415', 'name' => 'OCAMPO TERESITA', 'email' => 'ocampo.teresita@example.com', 'contact_number' => '09120000015', 'address' => 'SAN JOSE AURORA'],
-            ['wws_id' => '1416', 'name' => 'PEREZ RAMON', 'email' => 'perez.ramon@example.com', 'contact_number' => '09120000016', 'address' => 'POBLACION AURORA'],
-            ['wws_id' => '1417', 'name' => 'QUINTO GLORIA', 'email' => 'quinto.gloria@example.com', 'contact_number' => '09120000017', 'address' => 'ZAMORA AURORA'],
-            ['wws_id' => '1418', 'name' => 'RAMOS ALBERTO', 'email' => 'ramos.alberto@example.com', 'contact_number' => '09120000018', 'address' => 'POBLACION AURORA'],
-            ['wws_id' => '1419', 'name' => 'SANTOS ISABEL', 'email' => 'santos.isabel@example.com', 'contact_number' => '09120000019', 'address' => 'SAN JOSE AURORA'],
-            ['wws_id' => '1420', 'name' => 'TORRES RAFAEL', 'email' => 'torres.rafael@example.com', 'contact_number' => '09120000020', 'address' => 'POBLACION AURORA'],
-            ['wws_id' => '1421', 'name' => 'URBANO MERCEDES', 'email' => 'urbano.mercedes@example.com', 'contact_number' => '09120000021', 'address' => 'ZAMORA AURORA'],
-            ['wws_id' => '1422', 'name' => 'VALDEZ ENRIQUE', 'email' => 'valdez.enrique@example.com', 'contact_number' => '09120000022', 'address' => 'POBLACION AURORA'],
-            ['wws_id' => '1423', 'name' => 'YBAÑEZ CARMEN', 'email' => 'ybanez.carmen@example.com', 'contact_number' => '09120000023', 'address' => 'SAN JOSE AURORA'],
-            ['wws_id' => '1424', 'name' => 'ZABALA RODOLFO', 'email' => 'zabala.rodolfo@example.com', 'contact_number' => '09120000024', 'address' => 'POBLACION AURORA'],
-            ['wws_id' => '1425', 'name' => 'ALCANTARA VIRGINIA', 'email' => 'alcantara.virginia@example.com', 'contact_number' => '09120000025', 'address' => 'ZAMORA AURORA'],
-            ['wws_id' => '1426', 'name' => 'BARREDO ARTURO', 'email' => 'barredo.arturo@example.com', 'contact_number' => '09120000026', 'address' => 'POBLACION AURORA'],
-            ['wws_id' => '1427', 'name' => 'CASTILLO MARCELA', 'email' => 'castillo.marcela@example.com', 'contact_number' => '09120000027', 'address' => 'SAN JOSE AURORA'],
-            ['wws_id' => '1428', 'name' => 'DELGADO FELIX', 'email' => 'delgado.felix@example.com', 'contact_number' => '09120000028', 'address' => 'POBLACION AURORA'],
-            ['wws_id' => '1429', 'name' => 'ESPINOSA ROSARIO', 'email' => 'espinosa.rosario@example.com', 'contact_number' => '09120000029', 'address' => 'ZAMORA AURORA'],
-            ['wws_id' => '1430', 'name' => 'FERNANDEZ LEONARDO', 'email' => 'fernandez.leonardo@example.com', 'contact_number' => '09120000030', 'address' => 'POBLACION AURORA'],
-            ['wws_id' => '1431', 'name' => 'GONZALES REYNALDO', 'email' => 'gonzales.reynaldo@example.com', 'contact_number' => '09120000031', 'address' => 'SAN JOSE AURORA'],
-            ['wws_id' => '1432', 'name' => 'HERRERA JOSEFINA', 'email' => 'herrera.josefina@example.com', 'contact_number' => '09120000032', 'address' => 'POBLACION AURORA'],
-            ['wws_id' => '1433', 'name' => 'IGNACIO SALVADOR', 'email' => 'ignacio.salvador@example.com', 'contact_number' => '09120000033', 'address' => 'ZAMORA AURORA'],
-            ['wws_id' => '1434', 'name' => 'JIMENEZ CORAZON', 'email' => 'jimenez.corazon@example.com', 'contact_number' => '09120000034', 'address' => 'POBLACION AURORA'],
-            ['wws_id' => '1435', 'name' => 'LOPEZ MARGARITA', 'email' => 'lopez.margarita@example.com', 'contact_number' => '09120000035', 'address' => 'SAN JOSE AURORA'],
+                'approved_by' => 'admin',
+            ],
+            [
+                'name' => 'Michael Chen',
+                'email' => 'michael.chen@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'active',
+                'position' => 'Billing Supervisor',
+                'approved_at' => now(),
+                'approved_by' => 'admin',
+            ],
+            [
+                'name' => 'Emily Rodriguez',
+                'email' => 'emily.rodriguez@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'active',
+                'position' => 'Collections Officer',
+                'approved_at' => now(),
+                'approved_by' => 'admin',
+            ],
+            [
+                'name' => 'David Thompson',
+                'email' => 'david.thompson@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'active',
+                'position' => 'Technical Support',
+                'approved_at' => now(),
+                'approved_by' => 'admin',
+            ],
+            [
+                'name' => 'Lisa Wang',
+                'email' => 'lisa.wang@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'active',
+                'position' => 'Account Manager',
+                'approved_at' => now(),
+                'approved_by' => 'admin',
+            ],
+            [
+                'name' => 'Robert Garcia',
+                'email' => 'robert.garcia@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'active',
+                'position' => 'Field Operations Coordinator',
+                'approved_at' => now(),
+                'approved_by' => 'admin',
+            ],
+            [
+                'name' => 'Jennifer Martinez',
+                'email' => 'jennifer.martinez@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'active',
+                'position' => 'Compliance Officer',
+                'approved_at' => now(),
+                'approved_by' => 'admin',
+            ],
+            [
+                'name' => 'Kevin Brown',
+                'email' => 'kevin.brown@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'active',
+                'position' => 'IT Support Specialist',
+                'approved_at' => now(),
+                'approved_by' => 'admin',
+            ],
+            [
+                'name' => 'Amanda Wilson',
+                'email' => 'amanda.wilson@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'active',
+                'position' => 'Senior Billing Officer',
+                'approved_at' => now(),
+                'approved_by' => 'admin',
+            ],
+            [
+                'name' => 'James Lee',
+                'email' => 'james.lee@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'active',
+                'position' => 'Customer Relations Manager',
+                'approved_at' => now(),
+                'approved_by' => 'admin',
+            ],
+            [
+                'name' => 'Michelle Taylor',
+                'email' => 'michelle.taylor@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'active',
+                'position' => 'Finance Analyst',
+                'approved_at' => now(),
+                'approved_by' => 'admin',
+            ],
+            [
+                'name' => 'Daniel Kim',
+                'email' => 'daniel.kim@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'active',
+                'position' => 'Operations Supervisor',
+                'approved_at' => now(),
+                'approved_by' => 'admin',
+            ],
+            [
+                'name' => 'Nicole Anderson',
+                'email' => 'nicole.anderson@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'active',
+                'position' => 'Quality Assurance Specialist',
+                'approved_at' => now(),
+                'approved_by' => 'admin',
+            ],
+            [
+                'name' => 'Christopher Davis',
+                'email' => 'christopher.davis@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'active',
+                'position' => 'Training Coordinator',
+                'approved_at' => now(),
+                'approved_by' => 'admin',
+            ],
+            [
+                'name' => 'Stephanie White',
+                'email' => 'stephanie.white@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'active',
+                'position' => 'HR Coordinator',
+                'approved_at' => now(),
+                'approved_by' => 'admin',
+            ],
         ];
 
-        foreach ($pendingClients as $client) {
-            User::create([
-                'wws_id' => $client['wws_id'],
-                'name' => $client['name'],
-                'email' => $client['email'],
-                'contact_number' => $client['contact_number'],
-                'address' => $client['address'],
-                'password' => Hash::make('password123'),
-                'avatar' => null, // No avatars for clients
-                'role' => 'client',
+        // Additional Pending Staff Users (20+)
+        $pendingStaffUsers = [
+            [
+                'name' => 'Brian Miller',
+                'email' => 'brian.miller.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
                 'status' => 'pending',
-                'created_at' => now()->subDays(rand(1, 30))
-            ]);
-        }
-
-        // Add some additional rejected users for variety - no avatars
-        $rejectedClients = [
-            ['wws_id' => '1501', 'name' => 'MORALES RICARDO', 'email' => 'morales.ricardo@example.com', 'contact_number' => '09120000036', 'address' => 'POBLACION AURORA'],
-            ['wws_id' => '1502', 'name' => 'NUNEZ CARMELITA', 'email' => 'nunez.carmelita@example.com', 'contact_number' => '09120000037', 'address' => 'SAN JOSE AURORA'],
-            ['wws_id' => '1503', 'name' => 'ORTEGA FELIPE', 'email' => 'ortega.felipe@example.com', 'contact_number' => '09120000038', 'address' => 'ZAMORA AURORA'],
+                'position' => 'Facilities Manager',
+            ],
+            [
+                'name' => 'Rachel Moore',
+                'email' => 'rachel.moore.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'Public Relations Officer',
+            ],
+            [
+                'name' => 'Jason Clark',
+                'email' => 'jason.clark.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'Data Analyst',
+            ],
+            [
+                'name' => 'Melissa Harris',
+                'email' => 'melissa.harris.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'Administrative Assistant',
+            ],
+            [
+                'name' => 'Steven Lewis',
+                'email' => 'steven.lewis.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'Technical Writer',
+            ],
+            [
+                'name' => 'Jessica Walker',
+                'email' => 'jessica.walker.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'Compliance Auditor',
+            ],
+            [
+                'name' => 'Thomas Hall',
+                'email' => 'thomas.hall.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'Systems Administrator',
+            ],
+            [
+                'name' => 'Ashley Young',
+                'email' => 'ashley.young.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'Customer Success Manager',
+            ],
+            [
+                'name' => 'Mark Robinson',
+                'email' => 'mark.robinson.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'Network Engineer',
+            ],
+            [
+                'name' => 'Laura Scott',
+                'email' => 'laura.scott.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'Database Administrator',
+            ],
+            [
+                'name' => 'Eric King',
+                'email' => 'eric.king.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'Security Specialist',
+            ],
+            [
+                'name' => 'Megan Green',
+                'email' => 'megan.green.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'Project Coordinator',
+            ],
+            [
+                'name' => 'Andrew Adams',
+                'email' => 'andrew.adams.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'Business Analyst',
+            ],
+            [
+                'name' => 'Rebecca Baker',
+                'email' => 'rebecca.baker.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'Marketing Specialist',
+            ],
+            [
+                'name' => 'Joshua Carter',
+                'email' => 'joshua.carter.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'Software Developer',
+            ],
+            [
+                'name' => 'Olivia Mitchell',
+                'email' => 'olivia.mitchell.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'UX Designer',
+            ],
+            [
+                'name' => 'Brandon Perez',
+                'email' => 'brandon.perez.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'DevOps Engineer',
+            ],
+            [
+                'name' => 'Hannah Roberts',
+                'email' => 'hannah.roberts.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'Content Writer',
+            ],
+            [
+                'name' => 'Justin Turner',
+                'email' => 'justin.turner.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'Social Media Manager',
+            ],
+            [
+                'name' => 'Victoria Phillips',
+                'email' => 'victoria.phillips.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'Recruitment Specialist',
+            ],
+            [
+                'name' => 'Samuel Campbell',
+                'email' => 'samuel.campbell.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'Legal Assistant',
+            ],
+            [
+                'name' => 'Brittany Parker',
+                'email' => 'brittany.parker.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'Event Coordinator',
+            ],
+            [
+                'name' => 'Patrick Evans',
+                'email' => 'patrick.evans.pending@aurorawater.com',
+                'password' => Hash::make('123456'),
+                'role' => 'staff',
+                'status' => 'pending',
+                'position' => 'Inventory Manager',
+            ],
         ];
 
-        foreach ($rejectedClients as $client) {
-            User::create([
-                'wws_id' => $client['wws_id'],
-                'name' => $client['name'],
-                'email' => $client['email'],
-                'contact_number' => $client['contact_number'],
-                'address' => $client['address'],
-                'password' => Hash::make('password123'),
-                'avatar' => null,
-                'role' => 'client',
-                'status' => 'rejected',
-                'rejected_by' => 'System Admin',
-                'rejected_at' => now()->subDays(rand(1, 15)),
-                'rejection_reason' => $this->getRandomRejectionReason(),
-            ]);
-        }
-
-        // Add some additional active users - no avatars
-        $activeClients = [
-            ['wws_id' => '1601', 'name' => 'ORTIZ MANUEL', 'email' => 'ortiz.manuel@example.com', 'contact_number' => '09120000039', 'address' => 'POBLACION AURORA'],
-            ['wws_id' => '1602', 'name' => 'PASCUAL ELENA', 'email' => 'pascual.elena@example.com', 'contact_number' => '09120000040', 'address' => 'ZAMORA AURORA'],
-            ['wws_id' => '1603', 'name' => 'QUIZON RAUL', 'email' => 'quizon.raul@example.com', 'contact_number' => '09120000041', 'address' => 'SAN JOSE AURORA'],
-            ['wws_id' => '1604', 'name' => 'REYES LILIA', 'email' => 'reyes.lilia@example.com', 'contact_number' => '09120000042', 'address' => 'POBLACION AURORA'],
-        ];
-
-        foreach ($activeClients as $client) {
-            User::create([
-                'wws_id' => $client['wws_id'],
-                'name' => $client['name'],
-                'email' => $client['email'],
-                'contact_number' => $client['contact_number'],
-                'address' => $client['address'],
-                'password' => Hash::make('password123'),
-                'avatar' => null,
+        // Additional Active Client Users (20+)
+        $activeClientUsers = [
+            [
+                'name' => 'Carlos Reyes',
+                'email' => 'carlos.reyes@aurorawater.com',
+                'wws_id' => 'WWS004',
+                'password' => Hash::make('123456'),
                 'role' => 'client',
                 'status' => 'active',
-                'approved_by' => 'System Admin',
-                'approved_at' => now()->subDays(rand(1, 60)),
-            ]);
-        }
-    }
-
-    /**
-     * Generate random rejection reasons
-     */
-    private function getRandomRejectionReason()
-    {
-        $reasons = [
-            'Invalid WWS ID provided',
-            'WWS ID does not match our records',
-            'Duplicate account registration',
-            'Incomplete personal information',
-            'Suspected fraudulent registration',
-            'WWS ID already associated with another account',
-            'Document verification failed',
-            'Address does not match service area',
+                'service' => 'residential',
+                'address' => '101 Oak Street, Aurora',
+                'contact_number' => '09122334455',
+                'approved_at' => now(),
+                'approved_by' => 'staff',
+            ],
+            [
+                'name' => 'Sophia Gonzalez',
+                'email' => 'sophia.gonzalez@aurorawater.com',
+                'wws_id' => 'WWS005',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'active',
+                'service' => 'commercial',
+                'address' => '202 Pine Avenue, Aurora',
+                'contact_number' => '09133445566',
+                'approved_at' => now(),
+                'approved_by' => 'staff',
+            ],
+            [
+                'name' => 'Miguel Torres',
+                'email' => 'miguel.torres@aurorawater.com',
+                'wws_id' => 'WWS006',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'active',
+                'service' => 'institutional',
+                'address' => '303 Maple Road, Aurora',
+                'contact_number' => '09144556677',
+                'approved_at' => now(),
+                'approved_by' => 'staff',
+            ],
+            [
+                'name' => 'Isabella Cruz',
+                'email' => 'isabella.cruz@aurorawater.com',
+                'wws_id' => 'WWS007',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'active',
+                'service' => 'residential',
+                'address' => '404 Cedar Lane, Aurora',
+                'contact_number' => '09155667788',
+                'approved_at' => now(),
+                'approved_by' => 'staff',
+            ],
+            [
+                'name' => 'Eduardo Ramos',
+                'email' => 'eduardo.ramos@aurorawater.com',
+                'wws_id' => 'WWS008',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'active',
+                'service' => 'commercial',
+                'address' => '505 Elm Street, Aurora',
+                'contact_number' => '09166778899',
+                'approved_at' => now(),
+                'approved_by' => 'staff',
+            ],
+            [
+                'name' => 'Valentina Morales',
+                'email' => 'valentina.morales@aurorawater.com',
+                'wws_id' => 'WWS009',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'active',
+                'service' => 'residential',
+                'address' => '606 Birch Avenue, Aurora',
+                'contact_number' => '09177889900',
+                'approved_at' => now(),
+                'approved_by' => 'staff',
+            ],
+            [
+                'name' => 'Ricardo Chavez',
+                'email' => 'ricardo.chavez@aurorawater.com',
+                'wws_id' => 'WWS010',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'active',
+                'service' => 'commercial',
+                'address' => '707 Walnut Street, Aurora',
+                'contact_number' => '09188990011',
+                'approved_at' => now(),
+                'approved_by' => 'staff',
+            ],
+            [
+                'name' => 'Camila Ortega',
+                'email' => 'camila.ortega@aurorawater.com',
+                'wws_id' => 'WWS011',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'active',
+                'service' => 'institutional',
+                'address' => '808 Spruce Road, Aurora',
+                'contact_number' => '09199001122',
+                'approved_at' => now(),
+                'approved_by' => 'staff',
+            ],
+            [
+                'name' => 'Fernando Silva',
+                'email' => 'fernando.silva@aurorawater.com',
+                'wws_id' => 'WWS012',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'active',
+                'service' => 'residential',
+                'address' => '909 Magnolia Lane, Aurora',
+                'contact_number' => '09200112233',
+                'approved_at' => now(),
+                'approved_by' => 'staff',
+            ],
+            [
+                'name' => 'Gabriela Mendoza',
+                'email' => 'gabriela.mendoza@aurorawater.com',
+                'wws_id' => 'WWS013',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'active',
+                'service' => 'commercial',
+                'address' => '1010 Rose Avenue, Aurora',
+                'contact_number' => '09211223344',
+                'approved_at' => now(),
+                'approved_by' => 'staff',
+            ],
         ];
 
-        return $reasons[array_rand($reasons)];
+        // Additional Pending Client Users (20+)
+        $pendingClientUsers = [
+            [
+                'name' => 'Alejandro Ruiz',
+                'email' => 'alejandro.ruiz.pending@aurorawater.com',
+                'wws_id' => 'WWS014',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'residential',
+                'address' => '1111 Tulip Street, Aurora',
+                'contact_number' => '09222334455',
+            ],
+            [
+                'name' => 'Lucia Vargas',
+                'email' => 'lucia.vargas.pending@aurorawater.com',
+                'wws_id' => 'WWS015',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'commercial',
+                'address' => '1212 Orchid Road, Aurora',
+                'contact_number' => '09233445566',
+            ],
+            [
+                'name' => 'Javier Herrera',
+                'email' => 'javier.herrera.pending@aurorawater.com',
+                'wws_id' => 'WWS016',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'institutional',
+                'address' => '1313 Lily Avenue, Aurora',
+                'contact_number' => '09244556677',
+            ],
+            [
+                'name' => 'Daniela Castro',
+                'email' => 'daniela.castro.pending@aurorawater.com',
+                'wws_id' => 'WWS017',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'residential',
+                'address' => '1414 Daisy Lane, Aurora',
+                'contact_number' => '09255667788',
+            ],
+            [
+                'name' => 'Roberto Navarro',
+                'email' => 'roberto.navarro.pending@aurorawater.com',
+                'wws_id' => 'WWS018',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'commercial',
+                'address' => '1515 Sunflower Street, Aurora',
+                'contact_number' => '09266778899',
+            ],
+            [
+                'name' => 'Elena Rios',
+                'email' => 'elena.rios.pending@aurorawater.com',
+                'wws_id' => 'WWS019',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'residential',
+                'address' => '1616 Jasmine Road, Aurora',
+                'contact_number' => '09277889900',
+            ],
+            [
+                'name' => 'Hector Delgado',
+                'email' => 'hector.delgado.pending@aurorawater.com',
+                'wws_id' => 'WWS020',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'commercial',
+                'address' => '1717 Violet Avenue, Aurora',
+                'contact_number' => '09288990011',
+            ],
+            [
+                'name' => 'Patricia Vega',
+                'email' => 'patricia.vega.pending@aurorawater.com',
+                'wws_id' => 'WWS021',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'institutional',
+                'address' => '1818 Carnation Lane, Aurora',
+                'contact_number' => '09299001122',
+            ],
+            [
+                'name' => 'Oscar Paredes',
+                'email' => 'oscar.paredes.pending@aurorawater.com',
+                'wws_id' => 'WWS022',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'residential',
+                'address' => '1919 Marigold Street, Aurora',
+                'contact_number' => '09300112233',
+            ],
+            [
+                'name' => 'Adriana Solis',
+                'email' => 'adriana.solis.pending@aurorawater.com',
+                'wws_id' => 'WWS023',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'commercial',
+                'address' => '2020 Lavender Road, Aurora',
+                'contact_number' => '09311223344',
+            ],
+            [
+                'name' => 'Raul Mejia',
+                'email' => 'raul.mejia.pending@aurorawater.com',
+                'wws_id' => 'WWS024',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'residential',
+                'address' => '2121 Iris Avenue, Aurora',
+                'contact_number' => '09322334455',
+            ],
+            [
+                'name' => 'Sandra Guzman',
+                'email' => 'sandra.guzman.pending@aurorawater.com',
+                'wws_id' => 'WWS025',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'commercial',
+                'address' => '2222 Poppy Lane, Aurora',
+                'contact_number' => '09333445566',
+            ],
+            [
+                'name' => 'Felipe Cordova',
+                'email' => 'felipe.cordova.pending@aurorawater.com',
+                'wws_id' => 'WWS026',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'institutional',
+                'address' => '2323 Azalea Street, Aurora',
+                'contact_number' => '09344556677',
+            ],
+            [
+                'name' => 'Veronica Acosta',
+                'email' => 'veronica.acosta.pending@aurorawater.com',
+                'wws_id' => 'WWS027',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'residential',
+                'address' => '2424 Gardenia Road, Aurora',
+                'contact_number' => '09355667788',
+            ],
+            [
+                'name' => 'Manuel Ortiz',
+                'email' => 'manuel.ortiz.pending@aurorawater.com',
+                'wws_id' => 'WWS028',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'commercial',
+                'address' => '2525 Hibiscus Street, Aurora',
+                'contact_number' => '09366778899',
+            ],
+            [
+                'name' => 'Carmen Flores',
+                'email' => 'carmen.flores.pending@aurorawater.com',
+                'wws_id' => 'WWS029',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'residential',
+                'address' => '2626 Magnolia Avenue, Aurora',
+                'contact_number' => '09377889900',
+            ],
+            [
+                'name' => 'Arturo Medina',
+                'email' => 'arturo.medina.pending@aurorawater.com',
+                'wws_id' => 'WWS030',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'commercial',
+                'address' => '2727 Jasmine Lane, Aurora',
+                'contact_number' => '09388990011',
+            ],
+            [
+                'name' => 'Lourdes Castillo',
+                'email' => 'lourdes.castillo.pending@aurorawater.com',
+                'wws_id' => 'WWS031',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'institutional',
+                'address' => '2828 Rosewood Road, Aurora',
+                'contact_number' => '09399001122',
+            ],
+            [
+                'name' => 'Rogelio Jimenez',
+                'email' => 'rogelio.jimenez.pending@aurorawater.com',
+                'wws_id' => 'WWS032',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'residential',
+                'address' => '2929 Lavender Lane, Aurora',
+                'contact_number' => '09400112233',
+            ],
+            [
+                'name' => 'Teresa Romero',
+                'email' => 'teresa.romero.pending@aurorawater.com',
+                'wws_id' => 'WWS033',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'commercial',
+                'address' => '3030 Camellia Street, Aurora',
+                'contact_number' => '09411223344',
+            ],
+            [
+                'name' => 'Francisco Mendez',
+                'email' => 'francisco.mendez.pending@aurorawater.com',
+                'wws_id' => 'WWS034',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'residential',
+                'address' => '3131 Peony Avenue, Aurora',
+                'contact_number' => '09422334455',
+            ],
+            [
+                'name' => 'Guadalupe Rojas',
+                'email' => 'guadalupe.rojas.pending@aurorawater.com',
+                'wws_id' => 'WWS035',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'commercial',
+                'address' => '3232 Lilac Road, Aurora',
+                'contact_number' => '09433445566',
+            ],
+            [
+                'name' => 'Alberto Leon',
+                'email' => 'alberto.leon.pending@aurorawater.com',
+                'wws_id' => 'WWS036',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'institutional',
+                'address' => '3333 Hydrangea Lane, Aurora',
+                'contact_number' => '09444556677',
+            ],
+            [
+                'name' => 'Silvia Marquez',
+                'email' => 'silvia.marquez.pending@aurorawater.com',
+                'wws_id' => 'WWS037',
+                'password' => Hash::make('123456'),
+                'role' => 'client',
+                'status' => 'pending',
+                'service' => 'residential',
+                'address' => '3434 Zinnia Street, Aurora',
+                'contact_number' => '09455667788',
+            ],
+        ];
+
+        // Create all active staff users
+        foreach ($activeStaffUsers as $staffUser) {
+            User::create($staffUser);
+        }
+
+        // Create all pending staff users
+        foreach ($pendingStaffUsers as $staffUser) {
+            User::create($staffUser);
+        }
+
+        // Create all active client users
+        foreach ($activeClientUsers as $clientUser) {
+            User::create($clientUser);
+        }
+
+        // Create all pending client users
+        foreach ($pendingClientUsers as $clientUser) {
+            User::create($clientUser);
+        }
     }
 }
