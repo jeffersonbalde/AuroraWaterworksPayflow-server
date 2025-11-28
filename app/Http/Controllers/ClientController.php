@@ -10,6 +10,7 @@ use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class ClientController extends Controller
@@ -116,7 +117,7 @@ class ClientController extends Controller
         $validator = Validator::make($request->all(), [
             'bill_id' => 'required|exists:bills,id',
             'payment_method' => 'required|in:online,over_the_counter',
-            'payment_gateway' => 'required|in:demo,paymongo,gcash,paypal,stripe',
+            'payment_gateway' => 'required|in:demo,paymongo,gcash',
             'amount' => 'required|numeric|min:0.01',
         ]);
 
@@ -178,9 +179,10 @@ class ClientController extends Controller
             // Refresh payment data to get latest status
             $payment->refresh();
 
-            return response()->json([
+            // Prepare response
+            $response = [
                 'success' => true,
-                'message' => 'Payment processed successfully',
+                'message' => $paymentResult['message'] ?? 'Payment processed successfully',
                 'payment' => [
                     'id' => $payment->id,
                     'gateway_reference' => $payment->gateway_reference,
@@ -189,14 +191,33 @@ class ClientController extends Controller
                     'payment_gateway' => $payment->payment_gateway,
                 ],
                 'payment_result' => $paymentResult,
-            ]);
+            ];
+
+            // If payment requires redirect (e.g., PayMongo checkout), include checkout URL
+            if (isset($paymentResult['requires_redirect']) && $paymentResult['requires_redirect']) {
+                $response['checkout_url'] = $paymentResult['checkout_url'];
+                $response['requires_redirect'] = true;
+            }
+
+            return response()->json($response);
         } catch (\Exception $e) {
             DB::rollBack();
+
+            // Provide more helpful error messages
+            $errorMessage = $e->getMessage();
+            if (strpos($errorMessage, 'gcash payment method is not allowed') !== false) {
+                $errorMessage = 'GCash payment method is not enabled in your PayMongo account. Please enable GCash in your PayMongo dashboard settings.';
+            }
+
+            Log::error('Payment processing error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
 
             return response()->json([
                 'success' => false,
                 'message' => 'Payment processing failed',
-                'error' => $e->getMessage()
+                'error' => $errorMessage
             ], 500);
         }
     }

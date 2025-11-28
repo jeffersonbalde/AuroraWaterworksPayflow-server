@@ -25,21 +25,36 @@ class PaymentController extends Controller
         $paymentId = $request->input('payment_id');
         $sessionId = $request->input('session_id');
         $reference = $request->input('reference');
+        $payment_intent_id = $request->input('payment_intent_id');
 
         try {
             // Find payment
-            $payment = $this->findPayment($gateway, $paymentId, $sessionId, $reference);
+            $payment = $this->findPayment($gateway, $paymentId, $sessionId, $reference, $payment_intent_id);
             
             if (!$payment) {
-                return redirect('/payment/failed')->with('error', 'Payment not found');
+                return redirect(config('app.frontend_url', 'http://localhost:5173') . '/payment/failed?error=payment_not_found');
+            }
+
+            // For PayMongo, check payment status
+            if ($gateway === 'paymongo' || $payment->payment_gateway === 'gcash') {
+                // Check payment status from PayMongo
+                $status = $this->paymentService->checkPaymentStatus($payment);
+                
+                if ($status['status'] === 'completed') {
+                    // Redirect to frontend success page
+                    return redirect(config('payment.frontend_url', 'http://localhost:5173') . '/make-payment?success=true&payment_id=' . $payment->id);
+                } else {
+                    // Still pending, redirect to pending page
+                    return redirect(config('payment.frontend_url', 'http://localhost:5173') . '/make-payment?pending=true&payment_id=' . $payment->id);
+                }
             }
 
             // For demo purposes, always show success
-            return view('payment.success', compact('payment'));
+            return redirect(config('payment.frontend_url', 'http://localhost:5173') . '/make-payment?success=true&payment_id=' . $payment->id);
 
         } catch (\Exception $e) {
             Log::error("Payment success handling failed: " . $e->getMessage());
-            return redirect('/payment/failed')->with('error', 'Payment verification failed');
+            return redirect(config('payment.frontend_url', 'http://localhost:5173') . '/payment/failed?error=verification_failed');
         }
     }
 
@@ -70,7 +85,7 @@ class PaymentController extends Controller
             }
         }
 
-        return view('payment.cancelled');
+        return redirect(config('payment.frontend_url', 'http://localhost:5173') . '/make-payment?cancelled=true&payment_id=' . $paymentId);
     }
 
     /**
@@ -97,18 +112,46 @@ class PaymentController extends Controller
     }
 
     /**
-     * Handle payment webhooks (stub for future use)
+     * Handle payment webhooks
      */
     public function webhook(Request $request, $gateway)
     {
-        Log::info("Webhook received from {$gateway} (Demo Mode)");
-        return response()->json(['status' => 'webhook_received_demo_mode']);
+        try {
+            if ($gateway === 'paymongo') {
+                $payload = $request->all();
+                $signature = $request->header('Paymongo-Signature');
+                
+                Log::info("PayMongo webhook received", [
+                    'payload' => $payload,
+                    'signature' => $signature
+                ]);
+
+                // Verify and process webhook
+                $result = $this->paymentService->handlePaymongoWebhook($payload);
+                
+                if ($result) {
+                    return response()->json(['status' => 'success'], 200);
+                } else {
+                    return response()->json(['status' => 'ignored'], 200);
+                }
+            }
+
+            Log::info("Webhook received from {$gateway} (Unsupported)");
+            return response()->json(['status' => 'unsupported_gateway'], 400);
+        } catch (\Exception $e) {
+            Log::error("Webhook processing error: " . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+        }
     }
 
-    private function findPayment($gateway, $paymentId, $sessionId, $reference)
+    private function findPayment($gateway, $paymentId, $sessionId, $reference, $paymentIntentId = null)
     {
         if ($paymentId) {
             return Payment::find($paymentId);
+        }
+        
+        if ($paymentIntentId) {
+            return Payment::where('gateway_reference', $paymentIntentId)->first();
         }
         
         if ($sessionId) {

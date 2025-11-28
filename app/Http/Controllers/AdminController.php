@@ -10,6 +10,7 @@ use App\Models\AuthorizationCode;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -1283,17 +1284,38 @@ class AdminController extends Controller
                 return response()->json(['errors' => $validator->errors()], 422);
             }
 
+            DB::beginTransaction();
+            
             $payment->update([
                 'payment_status' => $request->payment_status,
                 'status' => $request->payment_status === 'completed' ? 'completed' : $payment->status,
                 'processed_at' => $request->payment_status === 'completed' ? now() : $payment->processed_at,
             ]);
 
+            // If payment is completed, also update the associated bill
+            if ($request->payment_status === 'completed') {
+                $bill = $payment->bill;
+                if ($bill && $bill->status !== 'paid') {
+                    $bill->update([
+                        'status' => 'paid',
+                        'paid_at' => now(),
+                    ]);
+                }
+            }
+
+            DB::commit();
+            
+            // Refresh payment to get latest data
+            $payment->refresh();
+
             return response()->json([
                 'message' => 'Payment processed successfully',
                 'payment' => $payment
             ]);
         } catch (\Exception $e) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
             Log::error('Failed to process payment: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Failed to process payment',

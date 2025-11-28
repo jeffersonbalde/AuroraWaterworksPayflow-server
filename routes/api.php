@@ -103,8 +103,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // In routes/api.php
     Route::prefix('payment')->group(function () {
         Route::get('/status/{paymentId}', [PaymentController::class, 'checkStatus']);
-        Route::post('/webhook/{gateway}', [PaymentController::class, 'webhook']);
     });
+    
+    // Webhook route (no auth required - PayMongo calls this directly)
+    Route::post('/payment/webhook/{gateway}', [PaymentController::class, 'webhook']);
 
     Route::get('/dashboard/client-data', [DashboardController::class, 'getClientDashboardData']);
 });
