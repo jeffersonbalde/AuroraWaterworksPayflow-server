@@ -306,17 +306,14 @@ class PaymentService
     {
         // For GCash QR code payment
         if ($gateway === 'gcash') {
-            $reference = 'GCASH' . date('YmdHis') . $payment->id;
-            
+            // Don't auto-generate gateway_reference - customer will provide it after payment
             $payment->update([
-                'gateway_reference' => $reference,
                 'payment_gateway' => 'gcash',
                 'payment_status' => 'pending', // Keep as pending until admin confirms
             ]);
 
             return [
                 'success' => true,
-                'reference' => $reference,
                 'gateway' => 'gcash',
                 'message' => 'Please scan the QR code and complete payment via GCash',
                 'requires_redirect' => false,

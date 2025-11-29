@@ -222,6 +222,51 @@ class ClientController extends Controller
         }
     }
 
+    public function updatePaymentReference(Request $request, $id)
+    {
+        $user = Auth::user();
+
+        $validator = Validator::make($request->all(), [
+            'gateway_reference' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $payment = Payment::where('id', $id)
+                ->where('user_id', $user->id)
+                ->firstOrFail();
+
+            // Update the gateway reference with customer-provided reference
+            $payment->update([
+                'gateway_reference' => $request->gateway_reference,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Reference number updated successfully',
+                'payment' => [
+                    'id' => $payment->id,
+                    'gateway_reference' => $payment->gateway_reference,
+                    'payment_status' => $payment->payment_status,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to update payment reference: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update reference number',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function getPendingBills(Request $request)
     {
         $user = Auth::user();

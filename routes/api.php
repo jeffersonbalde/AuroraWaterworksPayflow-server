@@ -98,6 +98,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/usage', [ClientController::class, 'getUsage']);
         Route::get('/pending-bills', [ClientController::class, 'getPendingBills']);
         Route::post('/make-payment', [ClientController::class, 'makePayment']);
+        Route::patch('/payments/{id}/update-reference', [ClientController::class, 'updatePaymentReference']);
     });
 
     // In routes/api.php
