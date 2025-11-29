@@ -136,8 +136,13 @@ class ClientController extends Controller
                 ->where('id', $request->bill_id)
                 ->firstOrFail();
 
-            // Validate payment amount
-            if ((float) $request->amount !== (float) $bill->total_payable) {
+            // Ensure the bill's automatic penalty and total payable are used
+            // when validating and processing the payment.
+            $effectivePenalty = $bill->automatic_penalty;
+            $effectiveTotalPayable = $bill->automatic_total_payable;
+
+            // Validate payment amount against the automatic total payable
+            if ((float) $request->amount !== (float) $effectiveTotalPayable) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Payment amount must match the total payable amount'
@@ -276,6 +281,11 @@ class ClientController extends Controller
             ->orderBy('due_date', 'asc')
             ->get()
             ->map(function ($bill) {
+                // Apply automatic 10% penalty for overdue bills so the client
+                // always sees the correct total payable.
+                $effectivePenalty = $bill->automatic_penalty;
+                $effectiveTotalPayable = $bill->automatic_total_payable;
+
                 return [
                     'id' => $bill->id,
                     'reading_date' => $bill->reading_date->format('Y-m-d'),
@@ -284,8 +294,8 @@ class ClientController extends Controller
                     'present_reading' => (float) $bill->present_reading,
                     'consumption' => (float) $bill->consumption,
                     'amount' => (float) $bill->amount,
-                    'penalty' => (float) $bill->penalty,
-                    'total_payable' => (float) $bill->total_payable,
+                    'penalty' => $effectivePenalty,
+                    'total_payable' => $effectiveTotalPayable,
                     'is_overdue' => $bill->is_overdue,
                     'days_overdue' => $bill->days_overdue,
                 ];

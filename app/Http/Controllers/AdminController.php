@@ -597,6 +597,10 @@ class AdminController extends Controller
             ->orderBy('reading_date', 'desc')
             ->get()
             ->map(function ($bill) {
+                // Use automatic 10% penalty when the bill is overdue.
+                $effectivePenalty = $bill->automatic_penalty;
+                $effectiveTotalPayable = $bill->automatic_total_payable;
+
                 return [
                     'id' => $bill->id,
                     'user_id' => $bill->user_id,
@@ -607,8 +611,8 @@ class AdminController extends Controller
                     'present_reading' => (float) $bill->present_reading,
                     'consumption' => (float) $bill->consumption,
                     'amount' => (float) $bill->amount,
-                    'penalty' => (float) $bill->penalty,
-                    'total_payable' => (float) $bill->total_payable,
+                    'penalty' => $effectivePenalty,
+                    'total_payable' => $effectiveTotalPayable,
                     'restated_amount' => $bill->restated_amount ? (float) $bill->restated_amount : null,
                     'restatement_reason' => $bill->restatement_reason,
                     'authorization_code' => $bill->authorization_code,

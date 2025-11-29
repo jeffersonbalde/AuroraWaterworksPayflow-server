@@ -10,6 +10,11 @@ class Bill extends Model
 {
     use HasFactory;
 
+    /**
+     * Automatic penalty rate for overdue bills (10%)
+     */
+    public const OVERDUE_PENALTY_RATE = 0.10;
+
     protected $fillable = [
         'user_id',
         'wws_id',
@@ -66,7 +71,9 @@ class Bill extends Model
             $this->consumption = $this->present_reading - $this->previous_reading;
         }
 
-        // Calculate total payable if amount is provided but total is not set
+        // Keep stored total payable in sync when amount/penalty are explicitly set.
+        // Note: automatic overdue penalties are calculated dynamically and are not
+        // persisted to this column.
         if ($this->amount > 0 && is_null($this->total_payable)) {
             $this->total_payable = $this->amount + $this->penalty;
         }
@@ -105,6 +112,29 @@ class Bill extends Model
     public function getFormattedTotalPayableAttribute()
     {
         return '₱' . number_format($this->total_payable, 2);
+    }
+
+    /**
+     * Get the automatically calculated penalty for overdue bills.
+     *
+     * This does NOT use the stored "penalty" column. Instead, it applies
+     * a fixed 10% rate to the base amount when the bill is overdue.
+     */
+    public function getAutomaticPenaltyAttribute(): float
+    {
+        if (!$this->is_overdue || $this->amount <= 0) {
+            return 0.0;
+        }
+
+        return round((float) $this->amount * static::OVERDUE_PENALTY_RATE, 2);
+    }
+
+    /**
+     * Get the total payable using the automatic penalty rule.
+     */
+    public function getAutomaticTotalPayableAttribute(): float
+    {
+        return round((float) $this->amount + $this->automatic_penalty, 2);
     }
 
     // Scopes
