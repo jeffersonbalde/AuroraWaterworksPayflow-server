@@ -1368,6 +1368,11 @@ class AdminController extends Controller
                     $counterPayments = $monthPayments->where('payment_method', 'over_the_counter');
                     $uniqueCustomers = $monthPayments->pluck('user_id')->unique()->count();
 
+                    // Sum total cubic meters (consumption) from related bills
+                    $totalCubicMeters = $monthPayments->sum(function ($payment) {
+                        return (float) (optional($payment->bill)->consumption ?? 0);
+                    });
+
                     $reports[] = [
                         'period' => \Illuminate\Support\Carbon::parse($month . '-01')->format('F Y'),
                         'period_key' => $month,
@@ -1378,6 +1383,7 @@ class AdminController extends Controller
                         'counter_collections' => (float) $counterPayments->sum('amount_paid'),
                         'online_count' => $onlinePayments->count(),
                         'counter_count' => $counterPayments->count(),
+                        'total_cubic_meters' => (float) $totalCubicMeters,
                     ];
                 }
 
@@ -1396,6 +1402,10 @@ class AdminController extends Controller
                     $counterPayments = $dayPayments->where('payment_method', 'over_the_counter');
                     $uniqueCustomers = $dayPayments->pluck('user_id')->unique()->count();
 
+                    $totalCubicMeters = $dayPayments->sum(function ($payment) {
+                        return (float) (optional($payment->bill)->consumption ?? 0);
+                    });
+
                     $reports[] = [
                         'period' => \Illuminate\Support\Carbon::parse($day)->format('M d, Y'),
                         'period_key' => $day,
@@ -1406,6 +1416,7 @@ class AdminController extends Controller
                         'counter_collections' => (float) $counterPayments->sum('amount_paid'),
                         'online_count' => $onlinePayments->count(),
                         'counter_count' => $counterPayments->count(),
+                        'total_cubic_meters' => (float) $totalCubicMeters,
                     ];
                 }
 
@@ -1418,6 +1429,10 @@ class AdminController extends Controller
                 $onlinePayments = $payments->where('payment_method', 'online');
                 $counterPayments = $payments->where('payment_method', 'over_the_counter');
                 $uniqueCustomers = $payments->pluck('user_id')->unique()->count();
+
+                $totalCubicMeters = $payments->sum(function ($payment) {
+                    return (float) (optional($payment->bill)->consumption ?? 0);
+                });
 
                 $periodStartLabel = $startDate
                     ? \Illuminate\Support\Carbon::parse($startDate)->format('M d, Y')
@@ -1436,6 +1451,7 @@ class AdminController extends Controller
                     'counter_collections' => (float) $counterPayments->sum('amount_paid'),
                     'online_count' => $onlinePayments->count(),
                     'counter_count' => $counterPayments->count(),
+                    'total_cubic_meters' => (float) $totalCubicMeters,
                 ];
             }
 
@@ -1446,6 +1462,9 @@ class AdminController extends Controller
                     'total_collected' => (float) $payments->sum('amount_paid'),
                     'total_customers' => $payments->pluck('user_id')->unique()->count(),
                     'total_transactions' => $payments->count(),
+                    'total_cubic_meters' => (float) $payments->sum(function ($payment) {
+                        return (float) (optional($payment->bill)->consumption ?? 0);
+                    }),
                     'start_date' => $startDate,
                     'end_date' => $endDate,
                     'report_type' => $reportType,
@@ -1500,6 +1519,10 @@ class AdminController extends Controller
                     $counterPayments = $monthPayments->where('payment_method', 'over_the_counter');
                     $uniqueCustomers = $monthPayments->pluck('user_id')->unique()->count();
 
+                    $totalCubicMeters = $monthPayments->sum(function ($payment) {
+                        return (float) (optional($payment->bill)->consumption ?? 0);
+                    });
+
                     $reports[] = [
                         'period' => \Illuminate\Support\Carbon::parse($month . '-01')->format('F Y'),
                         'total_collected' => (float) $monthPayments->sum('amount_paid'),
@@ -1507,12 +1530,17 @@ class AdminController extends Controller
                         'total_transactions' => $monthPayments->count(),
                         'online_collections' => (float) $onlinePayments->sum('amount_paid'),
                         'counter_collections' => (float) $counterPayments->sum('amount_paid'),
+                        'total_cubic_meters' => (float) $totalCubicMeters,
                     ];
                 }
             } else {
                 $onlinePayments = $payments->where('payment_method', 'online');
                 $counterPayments = $payments->where('payment_method', 'over_the_counter');
                 $uniqueCustomers = $payments->pluck('user_id')->unique()->count();
+
+                $totalCubicMeters = $payments->sum(function ($payment) {
+                    return (float) (optional($payment->bill)->consumption ?? 0);
+                });
 
                 $periodStartLabel = $startDate
                     ? \Illuminate\Support\Carbon::parse($startDate)->format('M d, Y')
@@ -1528,21 +1556,23 @@ class AdminController extends Controller
                     'total_transactions' => $payments->count(),
                     'online_collections' => (float) $onlinePayments->sum('amount_paid'),
                     'counter_collections' => (float) $counterPayments->sum('amount_paid'),
+                    'total_cubic_meters' => (float) $totalCubicMeters,
                 ];
             }
 
             if (in_array($format, ['excel', 'csv'])) {
                 // Generate CSV
-                $csv = "Period,Total Collected,Total Customers,Total Transactions,Online Collections,Counter Collections\n";
+                $csv = "Period,Total Collected,Total Customers,Total Transactions,Online Collections,Counter Collections,Total Cubic Meters\n";
                 foreach ($reports as $report) {
                     $csv .= sprintf(
-                        "%s,%.2f,%d,%d,%.2f,%.2f\n",
+                        "%s,%.2f,%d,%d,%.2f,%.2f,%.2f\n",
                         $report['period'],
                         $report['total_collected'],
                         $report['total_customers'],
                         $report['total_transactions'],
                         $report['online_collections'],
-                        $report['counter_collections']
+                        $report['counter_collections'],
+                        $report['total_cubic_meters'] ?? 0
                     );
                 }
 
